@@ -95,17 +95,17 @@ public class ShoppingListService extends CrudServiceImp<ShoppingListReq, Shoppin
     
     @Override
     protected ShoppingListRes convertResponseTo(ShoppingList entity) {
-        return mapper.mapperTo(entity);
+        return mapper.toShoppingListRes(entity);
     }
     
     @Override
     protected ShoppingList convertRequestTo(ShoppingListReq request) {
-        return mapper.mapperTo(request);
+        return mapper.toShoppingList(request);
     }
     
     @Override
     protected List<ShoppingListRes> convertPageTo(List<ShoppingList> page) {
-        return mapper.mapperTo(page);
+        return mapper.toShoppingListResCollection(page);
     }
     
 }

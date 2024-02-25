@@ -134,17 +134,17 @@ public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Produ
     
     @Override
     protected ProductRes convertResponseTo(Product entity) {
-        return mapper.mapperTo(entity);
+        return mapper.toProductRes(entity);
     }
     
     @Override
     protected Product convertRequestTo(ProductReq request) {
-        return mapper.mapperTo(request);
+        return mapper.toProduct(request);
     }
     
     @Override
     protected List<ProductRes> convertPageTo(List<Product> page) {
-        return mapper.mapperTo(page);
+        return mapper.toProductResCollection(page);
     }
     
 }

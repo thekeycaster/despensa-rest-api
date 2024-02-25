@@ -10,9 +10,9 @@ import java.util.List;
 @Mapper
 public interface UnitTypeMapper {
     
-     UnitTypeRes mapperTo(UnitType request);
-    List<UnitTypeRes> mapperTo(List<UnitType> request);
-    UnitType mapperTo(UnitTypeReq request);
+     UnitTypeRes toUnitTypeRes(UnitType request);
+    List<UnitTypeRes> toUnitTypeResCollection(List<UnitType> request);
+    UnitType toUnitType(UnitTypeReq request);
     
     
 }

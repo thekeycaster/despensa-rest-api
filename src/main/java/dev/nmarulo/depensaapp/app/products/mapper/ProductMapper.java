@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface ProductMapper {
-    ProductRes mapperTo(Product request);
-    List<ProductRes> mapperTo(List<Product> request);
-    Product mapperTo(ProductReq request);
+    ProductRes toProductRes(Product request);
+    List<ProductRes> toProductResCollection(List<Product> request);
+    Product toProduct(ProductReq request);
 }

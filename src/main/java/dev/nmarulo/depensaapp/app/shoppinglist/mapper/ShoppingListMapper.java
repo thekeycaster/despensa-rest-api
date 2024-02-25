@@ -10,8 +10,8 @@ import java.util.List;
 @Mapper
 public interface ShoppingListMapper {
     
-    ShoppingListRes mapperTo(ShoppingList request);
-    List<ShoppingListRes> mapperTo(List<ShoppingList> request);
-    ShoppingList mapperTo(ShoppingListReq request);
+    ShoppingListRes toShoppingListRes(ShoppingList request);
+    List<ShoppingListRes> toShoppingListResCollection(List<ShoppingList> request);
+    ShoppingList toShoppingList(ShoppingListReq request);
     
 }

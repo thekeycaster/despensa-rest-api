@@ -20,17 +20,17 @@ public class UnitTypeService extends CrudServiceImp<UnitTypeReq, UnitTypeRes, Un
     
     @Override
     protected UnitTypeRes convertResponseTo(UnitType entity) {
-        return mapper.mapperTo(entity);
+        return mapper.toUnitTypeRes(entity);
     }
     
     @Override
     protected UnitType convertRequestTo(UnitTypeReq request) {
-        return mapper.mapperTo(request);
+        return mapper.toUnitType(request);
     }
     
     @Override
     protected List<UnitTypeRes> convertPageTo(List<UnitType> page) {
-        return mapper.mapperTo(page);
+        return mapper.toUnitTypeResCollection(page);
     }
     
 }
