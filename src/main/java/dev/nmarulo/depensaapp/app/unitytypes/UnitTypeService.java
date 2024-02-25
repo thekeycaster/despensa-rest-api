@@ -6,6 +6,9 @@ import dev.nmarulo.depensaapp.commons.service.CrudServiceImp;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import dev.nmarulo.depensaapp.app.unitytypes.mapper.UnitTypeMapper;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -13,5 +16,21 @@ import org.springframework.stereotype.Service;
 public class UnitTypeService extends CrudServiceImp<UnitTypeReq, UnitTypeRes, UnitType, Integer> {
     
     private final UnitTypeRepository repository;
+    private final UnitTypeMapper mapper;
+    
+    @Override
+    protected UnitTypeRes convertResponseTo(UnitType entity) {
+        return mapper.mapperTo(entity);
+    }
+    
+    @Override
+    protected UnitType convertRequestTo(UnitTypeReq request) {
+        return mapper.mapperTo(request);
+    }
+    
+    @Override
+    protected List<UnitTypeRes> convertPageTo(List<UnitType> page) {
+        return mapper.mapperTo(page);
+    }
     
 }

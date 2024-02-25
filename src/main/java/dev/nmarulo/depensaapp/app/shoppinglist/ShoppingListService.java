@@ -10,6 +10,9 @@ import dev.nmarulo.depensaapp.commons.service.CrudServiceImp;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import dev.nmarulo.depensaapp.app.shoppinglist.mapper.ShoppingListMapper;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class ShoppingListService extends CrudServiceImp<ShoppingListReq, ShoppingListRes, ShoppingList, Integer> {
     
     private final ShoppingListRepository repository;
+    private final ShoppingListMapper mapper;
     
     public IndexShoppingListRes index() {
         var response = new IndexShoppingListRes();
@@ -87,6 +91,21 @@ public class ShoppingListService extends CrudServiceImp<ShoppingListReq, Shoppin
         response.setCreatedAt(entity.getCreatedAt());
         
         return response;
+    }
+    
+    @Override
+    protected ShoppingListRes convertResponseTo(ShoppingList entity) {
+        return mapper.mapperTo(entity);
+    }
+    
+    @Override
+    protected ShoppingList convertRequestTo(ShoppingListReq request) {
+        return mapper.mapperTo(request);
+    }
+    
+    @Override
+    protected List<ShoppingListRes> convertPageTo(List<ShoppingList> page) {
+        return mapper.mapperTo(page);
     }
     
 }

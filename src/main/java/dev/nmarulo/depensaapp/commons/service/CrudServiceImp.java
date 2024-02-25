@@ -4,7 +4,6 @@ import dev.nmarulo.depensaapp.commons.classes.PagingAndSortingRes;
 import dev.nmarulo.depensaapp.commons.component.DataRequestScope;
 import dev.nmarulo.depensaapp.commons.component.LocalMessage;
 import dev.nmarulo.depensaapp.commons.exception.NotFoundException;
-import dev.nmarulo.depensaapp.commons.gson.GsonUtil;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
@@ -19,9 +18,6 @@ import java.util.List;
 public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, ID> {
     
     @Autowired
-    private GsonUtil gsonUtil;
-    
-    @Autowired
     private DataRequestScope dataRequestScope;
     
     @Autowired
@@ -29,11 +25,17 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
     
     protected abstract JpaRepository<E, ID> getRepository();
     
+    protected abstract O convertResponseTo(E entity);
+    
+    protected abstract E convertRequestTo(I request);
+    
+    protected abstract List<O> convertPageTo(List<E> page);
+    
     @Override
     public PagingAndSortingRes<O> findAll() {
         Page<E> page = getRepository().findAll(this.dataRequestScope.getPageable());
-        
-        return pageToResponse(page, getResponseClass());
+        List<O> content = this.convertPageTo(page.getContent());
+        return buildPagination(content, page);
     }
     
     @Override
@@ -41,30 +43,30 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
         E entity = getRepository().findById(id)
                                   .orElse(null);
         
-        return this.gsonUtil.convertTo(entity, getResponseClass());
+        return this.convertResponseTo(entity);
     }
     
     @Override
     public O save(I request) {
-        E entity = this.gsonUtil.convertTo(request, getEntityClass());
+        E entity = this.convertRequestTo(request);
         
         setFieldId(null, entity);
         
         E save = getRepository().save(entity);
         
-        return this.gsonUtil.convertTo(save, getResponseClass());
+        return this.convertResponseTo(save);
     }
     
     @Override
     public O update(ID id, I request) {
         checkIsExistById(id);
-        E entity = this.gsonUtil.convertTo(request, getEntityClass());
+        E entity = this.convertRequestTo(request);
         
         setFieldId(id, entity);
         
         E save = getRepository().save(entity);
         
-        return this.gsonUtil.convertTo(save, getResponseClass());
+        return this.convertResponseTo(save);
     }
     
     @Override
@@ -73,9 +75,8 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
         getRepository().deleteById(id);
     }
     
-    protected <RE, EN> PagingAndSortingRes<RE> pageToResponse(Page<EN> page, Class<RE> classRE) {
-        PagingAndSortingRes<RE> response = new PagingAndSortingRes<>();
-        List<RE> content = this.gsonUtil.convertTo(page.getContent(), classRE);
+    protected static <O, E> PagingAndSortingRes<O> buildPagination(List<O> content, Page<E> page) {
+        PagingAndSortingRes<O> response = new PagingAndSortingRes<>();
         
         response.setContent(content);
         response.setCurrentPage(page.getNumber());
