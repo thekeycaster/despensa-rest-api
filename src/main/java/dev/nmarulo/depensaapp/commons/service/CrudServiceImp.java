@@ -8,6 +8,7 @@ import lombok.Getter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.ReflectionUtils;
@@ -30,16 +31,16 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
     
     @Override
     public PagingAndSortingRes<O> findAll() {
-        Type typeO = new TypeToken<PagingAndSortingRes<O>>() {}.getType();
+        Type responseType = new TypeToken<PagingAndSortingRes<O>>() {}.getType();
         Page<E> page = getRepository().findAll(this.dataRequestScope.getPageable());
-        return modelMapper.map(page, typeO);
+        return modelMapper.map(page, responseType);
     }
     
     @Override
     public O findById(ID id) {
-        Type typeO = new TypeToken<O>() {}.getType();
-        E entity = getRepository().findById(id).orElse(null);
-        return modelMapper.map(entity, typeO);
+        E entity = getRepository().findById(id)
+                                  .orElse(null);
+        return modelMapper.map(entity, getResponseClass());
     }
     
     @Override
@@ -60,14 +61,10 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
     }
     
     private O saveOrUpdate(ID id, I request) {
-        Type typeO = new TypeToken<O>() {}.getType();
-        Type typeE = new TypeToken<E>() {}.getType();
-        
-        E entity = modelMapper.map(request, typeE);
+        E entity = modelMapper.map(request, getEntityClass());
         setFieldId(id, entity);
         E save = getRepository().save(entity);
-        
-        return modelMapper.map(save, typeO);
+        return modelMapper.map(save, getResponseClass());
     }
     
     private void checkIsExistById(ID id) {
@@ -84,4 +81,19 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
             ReflectionUtils.setField(field, entity, id);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public Class<E> getEntityClass() {
+        return (Class<E>) ResolvableType.forClass(this.getClass())
+                                        .getSuperType()
+                                        .resolveGeneric(2);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected Class<O> getResponseClass() {
+        return (Class<O>) ResolvableType.forClass(this.getClass())
+                                        .getSuperType()
+                                        .resolveGeneric(1);
+    }
+    
 }

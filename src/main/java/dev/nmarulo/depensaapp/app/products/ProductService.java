@@ -23,37 +23,16 @@ import java.math.BigDecimal;
 public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Product, Integer> {
     
     private final ProductRepository repository;
-    
     private final ShoppingListRepository shoppingListRepository;
-    
     private final UnitTypeRepository unitTypeRepository;
-    
     private final ProductHasShoppingListRepository productHasShoppingListRepository;
     
     public IndexProductRes index(Integer excludeShoppingListId) {
         var response = new IndexProductRes();
         //Obtener todos los productos que no estén en la lista de compra actual.
         var pageFindAll = this.repository.findAllByIdNotInShoppingList(excludeShoppingListId, getDataRequestScope().getPageable());
-        
-        var products = pageFindAll.stream()
-                                  .map(this::mapperTo)
-                                  .toList();
-        
-        response.setContent(products);
-        response.setCurrentPage(pageFindAll.getNumber());
-        response.setPageSize(pageFindAll.getNumberOfElements());
-        response.setTotalPages(pageFindAll.getTotalPages());
-        response.setTotal(pageFindAll.getTotalElements());
-        
-        return response;
-    }
-    
-    private IndexProductRes.Product mapperTo(Product product) {
-        var response = new IndexProductRes.Product();
-        
-        response.setId(product.getId());
-        response.setName(product.getName());
-        response.setPrice(product.getPrice());
+       
+        getModelMapper().map(pageFindAll, response);
         
         return response;
     }
@@ -81,15 +60,14 @@ public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Produ
     private IndexShoppingListProductRes mapperTo(Product product, ShoppingList shoppingList, UnitType unitType, ProductHasShoppingList productHasShoppingListSave) {
         var response = new IndexShoppingListProductRes();
         
-        var shoppingListRes = new IndexShoppingListProductRes.ShoppingList(shoppingList.getId(), shoppingList.getName());
-        var unitTypeRes = new IndexShoppingListProductRes.UnitType(unitType.getId(), unitType.getName());
-        var productRes = new IndexShoppingListProductRes.Product(product.getId(), product.getName(), product.getPrice());
+        var shoppingListRes = getModelMapper().map(shoppingList, IndexShoppingListProductRes.ShoppingList.class);
+        var unitTypeRes = getModelMapper().map(unitType, IndexShoppingListProductRes.UnitType.class);
+        var productRes = getModelMapper().map(product, IndexShoppingListProductRes.Product.class);
         
-        response.setShoppingList(shoppingListRes);
-        response.setProduct(productRes);
-        response.setUnitType(unitTypeRes);
-        response.setTotalPrice(productHasShoppingListSave.getTotalPrice());
-        response.setUnitsPerProduct(productHasShoppingListSave.getUnitsPerProduct());
+        getModelMapper().map(shoppingListRes, response);
+        getModelMapper().map(unitTypeRes, response);
+        getModelMapper().map(productRes, response);
+        getModelMapper().map(productHasShoppingListSave, response);
         
         return response;
     }

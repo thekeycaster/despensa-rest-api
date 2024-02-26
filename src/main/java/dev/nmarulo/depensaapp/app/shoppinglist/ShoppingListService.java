@@ -21,17 +21,7 @@ public class ShoppingListService extends CrudServiceImp<ShoppingListReq, Shoppin
     public IndexShoppingListRes index() {
         var response = new IndexShoppingListRes();
         var pageFindAll = this.repository.findAll(getDataRequestScope().getPageable());
-        
-        var shoppingList = pageFindAll.stream()
-                                      .map(this::mapperTo)
-                                      .toList();
-        
-        response.setContent(shoppingList);
-        response.setCurrentPage(pageFindAll.getNumber());
-        response.setPageSize(pageFindAll.getNumberOfElements());
-        response.setTotalPages(pageFindAll.getTotalPages());
-        response.setTotal(pageFindAll.getTotalElements());
-        
+        getModelMapper().map(pageFindAll, response);
         return response;
     }
     
@@ -58,33 +48,13 @@ public class ShoppingListService extends CrudServiceImp<ShoppingListReq, Shoppin
     
     private IndexByIdShoppingListRes.Item mapperTo(ProductHasShoppingList productHasShoppingList) {
         var response = new IndexByIdShoppingListRes.Item();
-        var productRes = new IndexByIdShoppingListRes.Item.Product();
-        var unitTypeRes = new IndexByIdShoppingListRes.Item.UnitType();
-        var product = productHasShoppingList.getProduct();
-        var unitType = productHasShoppingList.getUnitType();
         
-        productRes.setId(product.getId());
-        productRes.setName(product.getName());
-        productRes.setPrice(product.getPrice());
-        unitTypeRes.setId(unitType.getId());
-        unitTypeRes.setName(unitType.getName());
+        var productRes = getModelMapper().map(productHasShoppingList, IndexByIdShoppingListRes.Item.Product.class);
+        var unitTypeRes = getModelMapper().map(productHasShoppingList, IndexByIdShoppingListRes.Item.UnitType.class);
         
-        response.setProduct(productRes);
-        response.setUnitType(unitTypeRes);
-        response.setTotalPrice(productHasShoppingList.getTotalPrice());
-        response.setUnitsPerProduct(productHasShoppingList.getUnitsPerProduct());
-        response.setSelected(productHasShoppingList.isSelected());
-        
-        return response;
-    }
-    
-    private IndexShoppingListRes.ShoppingList mapperTo(ShoppingList entity) {
-        var response = new IndexShoppingListRes.ShoppingList();
-        
-        response.setId(entity.getId());
-        response.setName(entity.getName());
-        response.setTotalProducts(entity.getTotalProducts());
-        response.setCreatedAt(entity.getCreatedAt());
+        getModelMapper().map(productRes, response);
+        getModelMapper().map(unitTypeRes, response);
+        getModelMapper().map(productHasShoppingList, response);
         
         return response;
     }
