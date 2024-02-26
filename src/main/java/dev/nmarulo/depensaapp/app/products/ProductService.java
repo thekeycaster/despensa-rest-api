@@ -11,14 +11,11 @@ import dev.nmarulo.depensaapp.app.unitytypes.UnitTypeRepository;
 import dev.nmarulo.depensaapp.commons.exception.BadRequestException;
 import dev.nmarulo.depensaapp.commons.exception.NotFoundException;
 import dev.nmarulo.depensaapp.commons.service.CrudServiceImp;
-import dev.nmarulo.depensaapp.app.products.mapper.ProductMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +23,6 @@ import java.util.List;
 public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Product, Integer> {
     
     private final ProductRepository repository;
-    private final ProductMapper mapper;
     
     private final ShoppingListRepository shoppingListRepository;
     
@@ -131,20 +127,4 @@ public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Produ
             throw new BadRequestException(getLocalMessage().getMessage("error.record-already-exist"));
         }
     }
-    
-    @Override
-    protected ProductRes convertResponseTo(Product entity) {
-        return mapper.toProductRes(entity);
-    }
-    
-    @Override
-    protected Product convertRequestTo(ProductReq request) {
-        return mapper.toProduct(request);
-    }
-    
-    @Override
-    protected List<ProductRes> convertPageTo(List<Product> page) {
-        return mapper.toProductResCollection(page);
-    }
-    
 }

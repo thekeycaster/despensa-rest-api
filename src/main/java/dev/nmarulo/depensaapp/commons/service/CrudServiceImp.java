@@ -5,17 +5,20 @@ import dev.nmarulo.depensaapp.commons.component.DataRequestScope;
 import dev.nmarulo.depensaapp.commons.component.LocalMessage;
 import dev.nmarulo.depensaapp.commons.exception.NotFoundException;
 import lombok.Getter;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.lang.reflect.Type;
 
 @Getter
 public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, ID> {
+    
+    private final ModelMapper modelMapper = new ModelMapper();
     
     @Autowired
     private DataRequestScope dataRequestScope;
@@ -25,48 +28,29 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
     
     protected abstract JpaRepository<E, ID> getRepository();
     
-    protected abstract O convertResponseTo(E entity);
-    
-    protected abstract E convertRequestTo(I request);
-    
-    protected abstract List<O> convertPageTo(List<E> page);
-    
     @Override
     public PagingAndSortingRes<O> findAll() {
+        Type typeO = new TypeToken<PagingAndSortingRes<O>>() {}.getType();
         Page<E> page = getRepository().findAll(this.dataRequestScope.getPageable());
-        List<O> content = this.convertPageTo(page.getContent());
-        return buildPagination(content, page);
+        return modelMapper.map(page, typeO);
     }
     
     @Override
     public O findById(ID id) {
-        E entity = getRepository().findById(id)
-                                  .orElse(null);
-        
-        return this.convertResponseTo(entity);
+        Type typeO = new TypeToken<O>() {}.getType();
+        E entity = getRepository().findById(id).orElse(null);
+        return modelMapper.map(entity, typeO);
     }
     
     @Override
     public O save(I request) {
-        E entity = this.convertRequestTo(request);
-        
-        setFieldId(null, entity);
-        
-        E save = getRepository().save(entity);
-        
-        return this.convertResponseTo(save);
+        return saveOrUpdate(null, request);
     }
     
     @Override
     public O update(ID id, I request) {
         checkIsExistById(id);
-        E entity = this.convertRequestTo(request);
-        
-        setFieldId(id, entity);
-        
-        E save = getRepository().save(entity);
-        
-        return this.convertResponseTo(save);
+        return saveOrUpdate(id, request);
     }
     
     @Override
@@ -75,16 +59,15 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
         getRepository().deleteById(id);
     }
     
-    protected static <O, E> PagingAndSortingRes<O> buildPagination(List<O> content, Page<E> page) {
-        PagingAndSortingRes<O> response = new PagingAndSortingRes<>();
+    private O saveOrUpdate(ID id, I request) {
+        Type typeO = new TypeToken<O>() {}.getType();
+        Type typeE = new TypeToken<E>() {}.getType();
         
-        response.setContent(content);
-        response.setCurrentPage(page.getNumber());
-        response.setPageSize(page.getNumberOfElements());
-        response.setTotalPages(page.getTotalPages());
-        response.setTotal(page.getTotalElements());
+        E entity = modelMapper.map(request, typeE);
+        setFieldId(id, entity);
+        E save = getRepository().save(entity);
         
-        return response;
+        return modelMapper.map(save, typeO);
     }
     
     private void checkIsExistById(ID id) {
@@ -101,19 +84,4 @@ public abstract class CrudServiceImp<I, O, E, ID> implements CrudService<I, O, I
             ReflectionUtils.setField(field, entity, id);
         }
     }
-    
-    @SuppressWarnings("unchecked")
-    public Class<E> getEntityClass() {
-        return (Class<E>) ResolvableType.forClass(this.getClass())
-                                        .getSuperType()
-                                        .resolveGeneric(2);
-    }
-    
-    @SuppressWarnings("unchecked")
-    protected Class<O> getResponseClass() {
-        return (Class<O>) ResolvableType.forClass(this.getClass())
-                                        .getSuperType()
-                                        .resolveGeneric(1);
-    }
-    
 }
