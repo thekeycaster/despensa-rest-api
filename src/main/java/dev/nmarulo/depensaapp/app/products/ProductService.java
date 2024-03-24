@@ -64,9 +64,9 @@ public class ProductService extends CrudServiceImp<ProductReq, ProductRes, Produ
         var unitTypeRes = getModelMapper().map(unitType, IndexShoppingListProductRes.UnitType.class);
         var productRes = getModelMapper().map(product, IndexShoppingListProductRes.Product.class);
         
-        getModelMapper().map(shoppingListRes, response);
-        getModelMapper().map(unitTypeRes, response);
-        getModelMapper().map(productRes, response);
+        getModelMapper().map(shoppingList, response);
+        getModelMapper().map(unitType, response);
+        getModelMapper().map(product, response);
         getModelMapper().map(productHasShoppingListSave, response);
         
         return response;
